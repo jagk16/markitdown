@@ -1,0 +1,252 @@
+:root {
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --surface-hover: #243044;
+  --border: #2d3a4f;
+  --text: #e8edf5;
+  --text-muted: #8b9cb3;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --success: #22c55e;
+  --error: #ef4444;
+  --warning: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background:
+    radial-gradient(ellipse at top, #1e293b 0%, var(--bg) 55%),
+    var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  max-width: 640px;
+}
+
+.notice {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  color: #fcd34d;
+  margin-bottom: 1.5rem;
+}
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--surface);
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.15s;
+}
+
+.dropzone:hover,
+.dropzone.dragging {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.dropzone.dragging {
+  transform: scale(1.01);
+}
+
+.dropzone-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.dropzone-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.dropzone-hint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.file-input-label {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.file-input-label:hover {
+  background: var(--accent-hover);
+}
+
+.file-input-label input {
+  display: none;
+}
+
+.progress-section {
+  margin-top: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #60a5fa);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.status {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.status.error {
+  color: var(--error);
+}
+
+.status.success {
+  color: var(--success);
+}
+
+.result-section {
+  margin-top: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.result-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.result-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.preview {
+  padding: 1.25rem;
+  max-height: 420px;
+  overflow: auto;
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #cbd5e1;
+}
+
+footer {
+  margin-top: 3rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
