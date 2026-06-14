@@ -50,11 +50,15 @@ vercel dev
 
 ## Deploy en Vercel
 
+> **Importante:** Lee también [`DEPLOY_VERCEL.md`](../DEPLOY_VERCEL.md) en la raíz del repo.
+
 1. Sube tu fork a GitHub.
 2. Importa el repositorio en Vercel.
-3. Configura **Root Directory**: `web`
+3. **Root Directory:** `web` ← obligatorio (sin esto verás 404)
 4. Crea un store **Blob** en el proyecto (Vercel lo vincula y crea `BLOB_READ_WRITE_TOKEN`).
-5. Deploy.
+5. Añade `MAX_FILE_SIZE_MB=25` en Environment Variables.
+6. Asegúrate de que `web/lib/constants.ts` esté commiteado en GitHub.
+7. Deploy.
 
 ## Flujo técnico
 
