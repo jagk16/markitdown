@@ -19,10 +19,6 @@ type ConvertResult = {
   downloadPath?: string;
 };
 
-const BLOB_ACCESS =
-  (process.env.NEXT_PUBLIC_BLOB_ACCESS_MODE as "public" | "private") ??
-  "public";
-
 function getExtension(filename: string): string {
   const dot = filename.lastIndexOf(".");
   return dot >= 0 ? filename.slice(dot).toLowerCase() : "";
@@ -77,7 +73,7 @@ export default function DropZone() {
 
     try {
       const blob = await upload(`uploads/${file.name}`, file, {
-        access: BLOB_ACCESS,
+        access: "public",
         handleUploadUrl: "/api/upload",
         onUploadProgress: ({ percentage }) => {
           setProgress(Math.max(10, Math.min(55, Math.round(percentage))));
