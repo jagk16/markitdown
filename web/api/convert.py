@@ -2,6 +2,7 @@ import io
 import json
 import os
 import re
+import uuid
 from http.server import BaseHTTPRequestHandler
 from typing import Any
 from urllib.parse import urlparse
@@ -82,20 +83,25 @@ def get_blob_access() -> str:
     return os.environ.get("BLOB_ACCESS_MODE", "public").lower()
 
 
-def save_markdown_via_api(content: str, original_filename: str) -> dict[str, str]:
-    vercel_url = os.environ.get("VERCEL_URL")
-    if not vercel_url:
-        raise ValueError(
-            "VERCEL_URL no disponible. El guardado en Blob requiere despliegue en Vercel."
-        )
+def upload_markdown_to_blob(content: str, original_filename: str) -> dict[str, str]:
+    token = os.environ.get("BLOB_READ_WRITE_TOKEN")
+    if not token:
+        raise ValueError("BLOB_READ_WRITE_TOKEN no configurado.")
 
-    output_name = os.path.splitext(os.path.basename(original_filename))[0] + ".md"
-    safe_stem = re.sub(r"[^a-zA-Z0-9._-]", "-", output_name)[:80]
+    stem = os.path.splitext(os.path.basename(original_filename))[0] or "document"
+    safe_stem = re.sub(r"[^a-zA-Z0-9._-]", "-", stem)[:80]
+    pathname = f"outputs/{safe_stem}-{uuid.uuid4().hex[:10]}.md"
 
-    response = requests.post(
-        f"https://{vercel_url}/api/save-markdown",
-        json={"content": content, "filename": safe_stem},
-        headers={"Content-Type": "application/json"},
+    response = requests.put(
+        f"https://blob.vercel-storage.com/{pathname}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "text/markdown; charset=utf-8",
+            "x-vercel-blob-access": get_blob_access(),
+            "x-content-type": "text/markdown; charset=utf-8",
+            "cache-control-max-age": str(BLOB_TTL_SECONDS),
+        },
+        data=content.encode("utf-8"),
         timeout=120,
     )
 
@@ -103,13 +109,13 @@ def save_markdown_via_api(content: str, original_filename: str) -> dict[str, str
         try:
             detail = response.json().get("error", response.text)
         except Exception:
-            detail = response.text
-        raise ValueError(f"No se pudo guardar el Markdown: {detail}")
+            detail = response.text[:500]
+        raise ValueError(f"No se pudo guardar el Markdown en Blob: {detail}")
 
     payload = response.json()
     return {
-        "downloadUrl": payload.get("downloadUrl", ""),
-        "downloadPath": payload.get("downloadPath", ""),
+        "downloadUrl": payload.get("url", ""),
+        "downloadPath": payload.get("pathname", pathname),
     }
 
 
@@ -149,7 +155,7 @@ def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
             "La conversión no produjo contenido. El PDF puede estar escaneado como imagen."
         )
 
-    upload_result = save_markdown_via_api(markdown_text, filename)
+    upload_result = upload_markdown_to_blob(markdown_text, filename)
     output_name = os.path.splitext(os.path.basename(filename))[0] + ".md"
 
     return {
