@@ -7,7 +7,7 @@ Interfaz web para convertir archivos a Markdown usando [Microsoft MarkItDown](ht
 - Drag-and-drop para subir archivos
 - Soporta PDF, Office, HTML, CSV, EPUB, imágenes y más
 - Subida directa a Vercel Blob (evita el límite de 4.5 MB de las Functions)
-- Conversión en Python serverless con `markitdown[all]`
+- Conversión en Python serverless con MarkItDown (PDF, Office, etc.)
 - Descarga del `.md` completo desde Blob + vista previa en pantalla
 
 ## Requisitos
@@ -123,7 +123,7 @@ web/
 ├── api/convert.py       # Función Python serverless
 ├── components/          # UI
 ├── lib/constants.ts     # Límites y formatos permitidos
-├── requirements.txt     # markitdown[all]
+├── requirements.txt     # markitdown[pdf,docx,pptx,xlsx,...]
 └── vercel.json          # maxDuration 300s, 2048 MB RAM
 ```
 
