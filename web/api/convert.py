@@ -45,7 +45,7 @@ ALLOWED_EXTENSIONS = {
 }
 
 BLOB_HOST_PATTERN = re.compile(
-    r"^([a-z0-9-]+\.)?(public\.)?blob\.vercel-storage\.com$",
+    r"^([a-z0-9-]+\.)?((public|private)\.)?blob\.vercel-storage\.com$",
     re.IGNORECASE,
 )
 
@@ -80,8 +80,8 @@ def get_extension(filename: str) -> str:
 
 
 def get_blob_access() -> str:
-    mode = os.environ.get("BLOB_ACCESS_MODE", "public").lower()
-    return "private" if mode == "private" else "public"
+    mode = os.environ.get("BLOB_ACCESS_MODE", "private").lower()
+    return "public" if mode == "public" else "private"
 
 
 def get_blob_token() -> str | None:

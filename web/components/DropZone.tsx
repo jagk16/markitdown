@@ -8,6 +8,11 @@ import {
   MAX_FILE_SIZE_BYTES,
   MAX_FILE_SIZE_MB,
 } from "@/lib/constants";
+import { sanitizeUploadPath } from "@/lib/upload-path";
+
+/** Debe coincidir con el tipo de tu Blob store en Vercel (Private → private). */
+const BLOB_ACCESS =
+  process.env.NEXT_PUBLIC_BLOB_ACCESS_MODE === "public" ? "public" : "private";
 
 type Stage = "idle" | "uploading" | "converting" | "done" | "error";
 
@@ -72,8 +77,8 @@ export default function DropZone() {
     setStatusMessage(`Subiendo ${file.name}…`);
 
     try {
-      const blob = await upload(`uploads/${file.name}`, file, {
-        access: "public",
+      const blob = await upload(sanitizeUploadPath(file.name), file, {
+        access: BLOB_ACCESS,
         handleUploadUrl: "/api/upload",
         onUploadProgress: ({ percentage }) => {
           setProgress(Math.max(10, Math.min(55, Math.round(percentage))));

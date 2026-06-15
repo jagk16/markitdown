@@ -3,8 +3,12 @@
 export type BlobAccess = "public" | "private";
 
 export function getBlobAccess(): BlobAccess {
-  const mode = process.env.BLOB_ACCESS_MODE?.toLowerCase();
-  return mode === "private" ? "private" : "public";
+  const mode = (
+    process.env.BLOB_ACCESS_MODE ??
+    process.env.NEXT_PUBLIC_BLOB_ACCESS_MODE ??
+    "private"
+  ).toLowerCase();
+  return mode === "public" ? "public" : "private";
 }
 
 export function hasBlobToken(): boolean {
