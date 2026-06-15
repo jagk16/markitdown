@@ -10,9 +10,8 @@ import {
 } from "@/lib/constants";
 import { sanitizeUploadPath } from "@/lib/upload-path";
 
-/** Debe coincidir con el tipo de tu Blob store en Vercel (Private → private). */
-const BLOB_ACCESS =
-  process.env.NEXT_PUBLIC_BLOB_ACCESS_MODE === "public" ? "public" : "private";
+/** Store público en Vercel + @vercel/blob 0.27 requieren access public. */
+const BLOB_ACCESS = "public" as const;
 
 type Stage = "idle" | "uploading" | "converting" | "done" | "error";
 

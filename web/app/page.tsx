@@ -1,6 +1,6 @@
 import DropZone from "@/components/DropZone";
 import DeployStatus from "@/components/DeployStatus";
-import { MAX_FILE_SIZE_MB } from "@/lib/constants";
+import { MAX_FILE_SIZE_MB, SUPPORTED_ON_VERCEL } from "@/lib/constants";
 
 export default function HomePage() {
   return (
@@ -20,11 +20,22 @@ export default function HomePage() {
       </p>
 
       <p className="notice">
-        Uso público bajo tu responsabilidad. Los archivos se procesan de forma
-        temporal (hasta 1 hora). Límite: {MAX_FILE_SIZE_MB} MB por archivo.
-        PDFs muy grandes (400+ páginas) pueden agotar el tiempo máximo de 5
-        minutos en Vercel Hobby.
+        Uso público bajo tu responsabilidad. Archivos temporales (~1 h).
+        Límite: {MAX_FILE_SIZE_MB} MB. PDFs muy grandes pueden agotar 5 min
+        (Vercel Hobby). Blob store debe ser <strong>Public</strong> en Vercel.
       </p>
+
+      <details className="formats-list">
+        <summary>Formatos soportados en Vercel</summary>
+        <ul>
+          {SUPPORTED_ON_VERCEL.map((format) => (
+            <li key={format}>{format}</li>
+          ))}
+        </ul>
+        <p className="dropzone-hint">
+          Audio (mp3/wav) no funciona en Vercel (falta ffmpeg).
+        </p>
+      </details>
 
       <DeployStatus />
 

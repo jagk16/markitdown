@@ -60,4 +60,24 @@ export const ALLOWED_CONTENT_TYPES = [
 ] as const;
 
 export const FORMAT_LABEL =
-  "PDF, Word, Excel, PowerPoint, HTML, CSV, EPUB, imágenes y más";
+  "PDF, Word, Excel, PowerPoint, HTML, CSV, JSON, EPUB, imágenes, ZIP";
+
+/** Formatos que funcionan en Vercel (sin ffmpeg ni Azure). */
+export const SUPPORTED_ON_VERCEL = [
+  "PDF (.pdf)",
+  "Word (.docx)",
+  "PowerPoint (.pptx)",
+  "Excel (.xlsx, .xls)",
+  "Outlook (.msg)",
+  "HTML (.html, .htm)",
+  "CSV, JSON, XML, TXT, Markdown",
+  "EPUB (.epub)",
+  "Jupyter (.ipynb)",
+  "ZIP (contenido interno)",
+  "Imágenes (.jpg, .png, .gif, .webp)",
+] as const;
+
+/** Aceptados en UI pero pueden fallar en Vercel serverless. */
+export const LIMITED_ON_VERCEL = [
+  "Audio (.mp3, .wav, .m4a) — requiere ffmpeg, no disponible en Vercel",
+] as const;

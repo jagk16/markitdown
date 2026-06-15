@@ -80,8 +80,7 @@ def get_extension(filename: str) -> str:
 
 
 def get_blob_access() -> str:
-    mode = os.environ.get("BLOB_ACCESS_MODE", "private").lower()
-    return "public" if mode == "public" else "private"
+    return "public"
 
 
 def get_blob_token() -> str | None:

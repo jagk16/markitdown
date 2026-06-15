@@ -80,7 +80,31 @@ h1 {
   padding: 0.875rem 1rem;
   font-size: 0.9rem;
   color: #fcd34d;
+  margin-bottom: 1rem;
+}
+
+.formats-list {
   margin-bottom: 1.5rem;
+  padding: 0.875rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+
+.formats-list summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.formats-list ul {
+  margin: 0.5rem 0 0 1.25rem;
+  color: var(--text-muted);
+}
+
+.formats-list li {
+  margin-bottom: 0.25rem;
 }
 
 .dropzone {
