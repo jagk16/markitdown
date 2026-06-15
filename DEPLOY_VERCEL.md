@@ -33,18 +33,53 @@ https://github.com/jagk16/markitdown/tree/main/web/lib
 
 En **Settings → Environment Variables**:
 
-| Variable | Valor |
-|----------|--------|
-| `BLOB_READ_WRITE_TOKEN` | Token de tu store Vercel Blob |
-| `MAX_FILE_SIZE_MB` | `25` |
+| Variable | Valor | ¿Qué poner? |
+|----------|--------|-------------|
+| `BLOB_READ_WRITE_TOKEN` | *(generado por Vercel)* | **No lo inventes.** Vercel lo crea al conectar un store Blob (ver abajo). |
+| `MAX_FILE_SIZE_MB` | `25` | Solo el número **25** (límite de MB por archivo). |
 
-Crea el store **Blob** en el proyecto si aún no lo tienes (Storage → Create Blob).
+### ¿Qué es Vercel Blob?
 
-## Paso 4: Redeploy
+Es el almacenamiento en la nube de Vercel para archivos (como un “disco” temporal). Tu app lo usa para:
 
-**Deployments** → último deploy → **Redeploy** (o push nuevo a `main`).
+1. Subir el PDF/archivo (hasta 25 MB, evitando el límite de 4.5 MB de las Functions)
+2. Guardar el `.md` convertido y darte un enlace de descarga
 
-Un build correcto debe tardar **varios minutos** (npm install + next build + Python deps), no 205 ms.
+**Importante:** si falta el token, la **página principal sí puede cargar**. Solo fallará al **subir o convertir** un archivo. Un **404 NOT_FOUND** en la home **no** se debe al token Blob.
+
+### Cómo obtener `BLOB_READ_WRITE_TOKEN`
+
+1. En Vercel, abre tu proyecto **markitdown**
+2. Pestaña **Storage** (arriba)
+3. **Create New** → elige **Blob**
+4. Pon un nombre (ej. `markitdown-files`) → **Create**
+5. **Connect to Project** → selecciona tu proyecto → confirma
+6. Vercel añade solo la variable `BLOB_READ_WRITE_TOKEN` (empieza por `vercel_blob_rw_...`)
+
+Para ver el valor: **Settings → Environment Variables** → icono del ojo junto a `BLOB_READ_WRITE_TOKEN`.  
+Normalmente **no hace falta copiarlo a mano** si conectaste Blob al proyecto.
+
+Luego añade manualmente:
+
+- **Name:** `MAX_FILE_SIZE_MB`
+- **Value:** `25`
+- **Environments:** Production, Preview, Development
+
+## Paso 4: Redeploy (obligatorio después de cambiar Root Directory)
+
+Cambiar **Root Directory** a `web` **no actualiza** el sitio solo. Debes redeployar:
+
+1. **Deployments**
+2. En el último deploy → menú **⋯** → **Redeploy**
+3. Desactiva *Use existing Build Cache* si aparece
+4. Confirma
+
+Un build correcto tarda **1–3 minutos** (npm install + next build), **no** 200 ms.
+
+En **Settings → General** verifica también:
+
+- **Framework Preset:** Next.js (no “Other”)
+- **Root Directory:** `web`
 
 ## Build exitoso (referencia)
 
