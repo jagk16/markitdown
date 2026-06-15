@@ -1,8 +1,10 @@
+import { head } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { getBlobReadWriteToken } from "@/lib/blob-config";
 
 export const dynamic = "force-dynamic";
 
-/** Descarga archivos .md públicos desde Blob. */
+/** Descarga archivos .md desde Blob (resuelve URL con token, sin depender de BLOB_STORE_ID). */
 export async function GET(request: Request): Promise<NextResponse> {
   const pathname = new URL(request.url).searchParams.get("pathname");
 
@@ -10,11 +12,18 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "pathname inválido." }, { status: 400 });
   }
 
-  const storeId = process.env.BLOB_STORE_ID?.replace("store_", "") ?? "";
-  const url = `https://${storeId}.public.blob.vercel-storage.com/${pathname}`;
+  const token = getBlobReadWriteToken();
+  if (!token) {
+    return NextResponse.json(
+      { error: "BLOB_READ_WRITE_TOKEN no configurado." },
+      { status: 500 },
+    );
+  }
 
   try {
-    const fileResponse = await fetch(url);
+    const meta = await head(pathname, { token });
+    const blobUrl = meta.downloadUrl ?? meta.url;
+    const fileResponse = await fetch(blobUrl);
     if (!fileResponse.ok) {
       return NextResponse.json({ error: "Archivo no encontrado." }, { status: 404 });
     }

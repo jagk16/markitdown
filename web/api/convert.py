@@ -113,8 +113,13 @@ def upload_markdown_to_blob(content: str, original_filename: str) -> dict[str, s
         raise ValueError(f"No se pudo guardar el Markdown en Blob: {detail}")
 
     payload = response.json()
+    blob_url = payload.get("downloadUrl") or payload.get("url", "")
+    if blob_url and "download=" not in blob_url:
+        sep = "&" if "?" in blob_url else "?"
+        blob_url = f"{blob_url}{sep}download=1"
+
     return {
-        "downloadUrl": payload.get("url", ""),
+        "downloadUrl": blob_url,
         "downloadPath": payload.get("pathname", pathname),
     }
 

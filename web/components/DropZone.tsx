@@ -233,11 +233,7 @@ export default function DropZone() {
             <div className="actions">
               <a
                 className="btn btn-primary"
-                href={
-                  result.downloadPath
-                    ? `/api/download?pathname=${encodeURIComponent(result.downloadPath)}`
-                    : result.downloadUrl
-                }
+                href={result.downloadUrl}
                 download={result.filename}
                 target="_blank"
                 rel="noopener noreferrer"
