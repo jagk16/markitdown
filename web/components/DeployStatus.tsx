@@ -5,14 +5,11 @@ import { useEffect, useState } from "react";
 type HealthResponse = {
   ok: boolean;
   version?: string;
+  fixHint?: string;
   blob?: {
+    storeId?: string | null;
     tokenConfigured: boolean;
-    storeConfigured: boolean;
-    accessMode: string;
-  };
-  env?: {
-    vercelEnv?: string;
-    gitCommit?: string | null;
+    connectionTest?: { ok: boolean; error?: string };
   };
 };
 
@@ -34,14 +31,18 @@ export default function DeployStatus() {
       });
   }, []);
 
+  const blobOk = health?.blob?.connectionTest?.ok;
+
   return (
     <section className="deploy-status" aria-live="polite">
       <p>
-        <strong>Estado del deploy:</strong>{" "}
-        {health?.ok ? (
-          <span className="status success">
-            OK v{health.version} ({health.env?.vercelEnv ?? "local"})
-          </span>
+        <strong>Estado Blob:</strong>{" "}
+        {health ? (
+          blobOk ? (
+            <span className="status success">Conectado v{health.version}</span>
+          ) : (
+            <span className="status error">No conectado</span>
+          )
         ) : error ? (
           <span className="status error">{error}</span>
         ) : (
@@ -49,22 +50,23 @@ export default function DeployStatus() {
         )}
       </p>
       {health?.blob && (
-        <p className="dropzone-hint">
-          Blob token: {health.blob.tokenConfigured ? "✓" : "✗"} · Store:{" "}
-          {health.blob.storeConfigured ? "✓" : "✗"} · Modo:{" "}
-          {health.blob.accessMode}
-        </p>
+        <>
+          <p className="dropzone-hint">
+            Token: {health.blob.tokenConfigured ? "✓" : "✗"} · Store:{" "}
+            {health.blob.storeId ? "✓" : "✗"}
+          </p>
+          {health.blob.connectionTest?.error && (
+            <p className="status error" style={{ fontSize: "0.85rem" }}>
+              {health.blob.connectionTest.error}
+            </p>
+          )}
+          {health.fixHint && !blobOk && (
+            <p className="dropzone-hint" style={{ color: "#fcd34d" }}>
+              {health.fixHint}
+            </p>
+          )}
+        </>
       )}
-      <p className="dropzone-hint">
-        Diagnóstico:{" "}
-        <a href="/api/health" target="_blank" rel="noopener noreferrer">
-          /api/health
-        </a>{" "}
-        ·{" "}
-        <a href="/health.txt" target="_blank" rel="noopener noreferrer">
-          /health.txt
-        </a>
-      </p>
     </section>
   );
 }

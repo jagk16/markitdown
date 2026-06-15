@@ -2,7 +2,6 @@ import io
 import json
 import os
 import re
-import uuid
 from http.server import BaseHTTPRequestHandler
 from typing import Any
 from urllib.parse import urlparse
@@ -80,23 +79,45 @@ def get_extension(filename: str) -> str:
 
 
 def get_blob_access() -> str:
-    return "public"
+    return os.environ.get("BLOB_ACCESS_MODE", "public").lower()
 
 
-def get_blob_token() -> str | None:
-    return os.environ.get("BLOB_READ_WRITE_TOKEN")
+def save_markdown_via_api(content: str, original_filename: str) -> dict[str, str]:
+    vercel_url = os.environ.get("VERCEL_URL")
+    if not vercel_url:
+        raise ValueError(
+            "VERCEL_URL no disponible. El guardado en Blob requiere despliegue en Vercel."
+        )
+
+    output_name = os.path.splitext(os.path.basename(original_filename))[0] + ".md"
+    safe_stem = re.sub(r"[^a-zA-Z0-9._-]", "-", output_name)[:80]
+
+    response = requests.post(
+        f"https://{vercel_url}/api/save-markdown",
+        json={"content": content, "filename": safe_stem},
+        headers={"Content-Type": "application/json"},
+        timeout=120,
+    )
+
+    if response.status_code >= 400:
+        try:
+            detail = response.json().get("error", response.text)
+        except Exception:
+            detail = response.text
+        raise ValueError(f"No se pudo guardar el Markdown: {detail}")
+
+    payload = response.json()
+    return {
+        "downloadUrl": payload.get("downloadUrl", ""),
+        "downloadPath": payload.get("downloadPath", ""),
+    }
 
 
 def download_blob(url: str) -> bytes:
     if not is_allowed_blob_url(url):
         raise ValueError("Solo se permiten URLs de Vercel Blob del proyecto.")
 
-    headers: dict[str, str] = {}
-    token = get_blob_token()
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-
-    response = requests.get(url, headers=headers, timeout=120)
+    response = requests.get(url, timeout=120)
     response.raise_for_status()
 
     content = response.content
@@ -106,45 +127,6 @@ def download_blob(url: str) -> bytes:
         )
 
     return content
-
-
-def upload_markdown(content: str, original_filename: str) -> dict[str, str]:
-    token = get_blob_token()
-    if not token:
-        raise ValueError("BLOB_READ_WRITE_TOKEN no está configurado.")
-
-    access = get_blob_access()
-    stem = os.path.splitext(os.path.basename(original_filename))[0] or "document"
-    safe_stem = re.sub(r"[^a-zA-Z0-9._-]", "-", stem)[:80]
-    pathname = f"outputs/{safe_stem}-{uuid.uuid4().hex[:10]}.md"
-
-    response = requests.put(
-        f"https://blob.vercel-storage.com/{pathname}",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "text/markdown; charset=utf-8",
-            "x-vercel-blob-access": access,
-            "x-content-type": "text/markdown; charset=utf-8",
-            "cache-control-max-age": str(BLOB_TTL_SECONDS),
-        },
-        data=content.encode("utf-8"),
-        timeout=120,
-    )
-
-    if response.status_code >= 400:
-        raise ValueError(
-            f"No se pudo guardar el Markdown en Blob (HTTP {response.status_code})."
-        )
-
-    payload = response.json()
-    download_url = payload.get("url", "")
-    if access == "private":
-        return {"downloadPath": pathname, "downloadUrl": ""}
-
-    if not download_url:
-        raise ValueError("Blob no devolvió una URL de descarga.")
-
-    return {"downloadPath": pathname, "downloadUrl": download_url}
 
 
 def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
@@ -167,7 +149,7 @@ def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
             "La conversión no produjo contenido. El PDF puede estar escaneado como imagen."
         )
 
-    upload_result = upload_markdown(markdown_text, filename)
+    upload_result = save_markdown_via_api(markdown_text, filename)
     output_name = os.path.splitext(os.path.basename(filename))[0] + ".md"
 
     return {

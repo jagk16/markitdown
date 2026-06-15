@@ -10,9 +10,6 @@ import {
 } from "@/lib/constants";
 import { sanitizeUploadPath } from "@/lib/upload-path";
 
-/** Store público en Vercel + @vercel/blob 0.27 requieren access public. */
-const BLOB_ACCESS = "public" as const;
-
 type Stage = "idle" | "uploading" | "converting" | "done" | "error";
 
 type ConvertResult = {
@@ -77,7 +74,7 @@ export default function DropZone() {
 
     try {
       const blob = await upload(sanitizeUploadPath(file.name), file, {
-        access: BLOB_ACCESS,
+        access: "public",
         handleUploadUrl: "/api/upload",
         onUploadProgress: ({ percentage }) => {
           setProgress(Math.max(10, Math.min(55, Math.round(percentage))));

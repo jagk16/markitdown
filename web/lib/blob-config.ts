@@ -1,9 +1,11 @@
-/** public = URLs accesibles con el enlace (recomendado para esta app temporal). */
-/** private = más seguro; requiere token del servidor para descargar. */
-export type BlobAccess = "public" | "private";
+/** Configuración Vercel Blob con BLOB_READ_WRITE_TOKEN (modo clásico). */
 
-export function getBlobAccess(): BlobAccess {
-  return "public";
+export function getBlobStoreId(): string | undefined {
+  return process.env.BLOB_STORE_ID;
+}
+
+export function getBlobReadWriteToken(): string | undefined {
+  return process.env.BLOB_READ_WRITE_TOKEN;
 }
 
 export function hasBlobToken(): boolean {
@@ -11,5 +13,9 @@ export function hasBlobToken(): boolean {
 }
 
 export function hasBlobStore(): boolean {
-  return Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(process.env.BLOB_STORE_ID);
+}
+
+export function isBlobConfigured(): boolean {
+  return hasBlobToken() && hasBlobStore();
 }
