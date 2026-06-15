@@ -1,4 +1,5 @@
 import DropZone from "@/components/DropZone";
+import DeployStatus from "@/components/DeployStatus";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
 
 export default function HomePage() {
@@ -24,6 +25,8 @@ export default function HomePage() {
         PDFs muy grandes (400+ páginas) pueden agotar el tiempo máximo de 5
         minutos en Vercel Hobby.
       </p>
+
+      <DeployStatus />
 
       <DropZone />
 

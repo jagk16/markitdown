@@ -31,39 +31,24 @@ https://github.com/jagk16/markitdown/tree/main/web/lib
 
 ## Paso 3: Variables de entorno en Vercel
 
-En **Settings → Environment Variables**:
+| Variable | Valor | Notas |
+|----------|--------|-------|
+| `BLOB_READ_WRITE_TOKEN` | *(auto)* | Vercel lo crea al conectar Blob. **No lo inventes.** |
+| `BLOB_STORE_ID` | *(auto)* | Vercel lo añade al conectar Blob. Opcional copiar manualmente. |
+| `MAX_FILE_SIZE_MB` | `25` | Solo el número 25. |
+| `BLOB_ACCESS_MODE` | `public` | Recomendado para esta app. Usa `private` si quieres más seguridad. |
+| `NEXT_PUBLIC_BLOB_ACCESS_MODE` | `public` | Debe coincidir con `BLOB_ACCESS_MODE`. |
 
-| Variable | Valor | ¿Qué poner? |
-|----------|--------|-------------|
-| `BLOB_READ_WRITE_TOKEN` | *(generado por Vercel)* | **No lo inventes.** Vercel lo crea al conectar un store Blob (ver abajo). |
-| `MAX_FILE_SIZE_MB` | `25` | Solo el número **25** (límite de MB por archivo). |
+### ¿Blob público o privado? (como Supabase buckets)
 
-### ¿Qué es Vercel Blob?
+| Modo | Cuándo usarlo |
+|------|----------------|
+| **public** | Recomendado aquí. URLs aleatorias, archivos temporales (~1 h). Más simple. |
+| **private** | Documentos sensibles. El servidor usa el token; el usuario descarga vía `/api/download`. |
 
-Es el almacenamiento en la nube de Vercel para archivos (como un “disco” temporal). Tu app lo usa para:
+Si Vercel te mostró `access: 'private'` en el ejemplo, puedes usar **private** — el código ya lo soporta. Solo añade las dos variables `BLOB_ACCESS_MODE` y `NEXT_PUBLIC_BLOB_ACCESS_MODE` con valor `private`.
 
-1. Subir el PDF/archivo (hasta 25 MB, evitando el límite de 4.5 MB de las Functions)
-2. Guardar el `.md` convertido y darte un enlace de descarga
-
-**Importante:** si falta el token, la **página principal sí puede cargar**. Solo fallará al **subir o convertir** un archivo. Un **404 NOT_FOUND** en la home **no** se debe al token Blob.
-
-### Cómo obtener `BLOB_READ_WRITE_TOKEN`
-
-1. En Vercel, abre tu proyecto **markitdown**
-2. Pestaña **Storage** (arriba)
-3. **Create New** → elige **Blob**
-4. Pon un nombre (ej. `markitdown-files`) → **Create**
-5. **Connect to Project** → selecciona tu proyecto → confirma
-6. Vercel añade solo la variable `BLOB_READ_WRITE_TOKEN` (empieza por `vercel_blob_rw_...`)
-
-Para ver el valor: **Settings → Environment Variables** → icono del ojo junto a `BLOB_READ_WRITE_TOKEN`.  
-Normalmente **no hace falta copiarlo a mano** si conectaste Blob al proyecto.
-
-Luego añade manualmente:
-
-- **Name:** `MAX_FILE_SIZE_MB`
-- **Value:** `25`
-- **Environments:** Production, Preview, Development
+**El token Blob NO causa el 404 en la página principal.** Solo afecta subir/convertir archivos.
 
 ## Paso 4: Redeploy (obligatorio después de cambiar Root Directory)
 
@@ -91,8 +76,19 @@ Running "build" command: next build ...
 ✓ Compiled successfully
 ```
 
-## Si sigue fallando
+## Si sigue el 404 — diagnóstico
 
-- Confirma **Root Directory = `web`**
-- Confirma que `web/lib/constants.ts` está en GitHub
-- Revisa el log de build (no el de deploy vacío)
+Prueba estas URLs **después del redeploy**:
+
+| URL | Si funciona | Significado |
+|-----|-------------|-------------|
+| `/health.txt` | Sí | Vercel sirve archivos estáticos; el problema es Next.js |
+| `/api/health` | Sí | Las API routes funcionan; revisa la ruta `/` |
+| Ambas 404 | No | Root Directory mal configurado o build vacío (~205 ms) |
+
+En **Settings → General** verifica:
+- **Root Directory:** `web` (con Save)
+- **Framework Preset:** Next.js
+- **Output Directory:** vacío (no pongas `.next` manualmente)
+
+Desactiva temporalmente **Skip deployments when there are no changes to the root directory** si está activo.

@@ -16,7 +16,12 @@ type ConvertResult = {
   preview: string;
   filename: string;
   charCount: number;
+  downloadPath?: string;
 };
+
+const BLOB_ACCESS =
+  (process.env.NEXT_PUBLIC_BLOB_ACCESS_MODE as "public" | "private") ??
+  "public";
 
 function getExtension(filename: string): string {
   const dot = filename.lastIndexOf(".");
@@ -72,7 +77,7 @@ export default function DropZone() {
 
     try {
       const blob = await upload(`uploads/${file.name}`, file, {
-        access: "public",
+        access: BLOB_ACCESS,
         handleUploadUrl: "/api/upload",
         onUploadProgress: ({ percentage }) => {
           setProgress(Math.max(10, Math.min(55, Math.round(percentage))));
@@ -231,7 +236,11 @@ export default function DropZone() {
             <div className="actions">
               <a
                 className="btn btn-primary"
-                href={result.downloadUrl}
+                href={
+                  result.downloadPath
+                    ? `/api/download?pathname=${encodeURIComponent(result.downloadPath)}`
+                    : result.downloadUrl
+                }
                 download={result.filename}
                 target="_blank"
                 rel="noopener noreferrer"

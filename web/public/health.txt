@@ -1,0 +1,3 @@
+markitdown-web OK
+Si ves este archivo, Vercel sirve archivos estáticos de /public.
+Prueba también: /api/health

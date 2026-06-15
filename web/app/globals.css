@@ -64,6 +64,15 @@ h1 {
   max-width: 640px;
 }
 
+.deploy-status {
+  margin-bottom: 1.25rem;
+  padding: 0.875rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+
 .notice {
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.35);

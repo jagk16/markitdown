@@ -79,11 +79,25 @@ def get_extension(filename: str) -> str:
     return filename[dot:].lower() if dot >= 0 else ""
 
 
+def get_blob_access() -> str:
+    mode = os.environ.get("BLOB_ACCESS_MODE", "public").lower()
+    return "private" if mode == "private" else "public"
+
+
+def get_blob_token() -> str | None:
+    return os.environ.get("BLOB_READ_WRITE_TOKEN")
+
+
 def download_blob(url: str) -> bytes:
     if not is_allowed_blob_url(url):
         raise ValueError("Solo se permiten URLs de Vercel Blob del proyecto.")
 
-    response = requests.get(url, timeout=120)
+    headers: dict[str, str] = {}
+    token = get_blob_token()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    response = requests.get(url, headers=headers, timeout=120)
     response.raise_for_status()
 
     content = response.content
@@ -95,11 +109,12 @@ def download_blob(url: str) -> bytes:
     return content
 
 
-def upload_markdown(content: str, original_filename: str) -> str:
-    token = os.environ.get("BLOB_READ_WRITE_TOKEN")
+def upload_markdown(content: str, original_filename: str) -> dict[str, str]:
+    token = get_blob_token()
     if not token:
         raise ValueError("BLOB_READ_WRITE_TOKEN no está configurado.")
 
+    access = get_blob_access()
     stem = os.path.splitext(os.path.basename(original_filename))[0] or "document"
     safe_stem = re.sub(r"[^a-zA-Z0-9._-]", "-", stem)[:80]
     pathname = f"outputs/{safe_stem}-{uuid.uuid4().hex[:10]}.md"
@@ -109,7 +124,7 @@ def upload_markdown(content: str, original_filename: str) -> str:
         headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "text/markdown; charset=utf-8",
-            "x-vercel-blob-access": "public",
+            "x-vercel-blob-access": access,
             "x-content-type": "text/markdown; charset=utf-8",
             "cache-control-max-age": str(BLOB_TTL_SECONDS),
         },
@@ -123,11 +138,14 @@ def upload_markdown(content: str, original_filename: str) -> str:
         )
 
     payload = response.json()
-    download_url = payload.get("url")
+    download_url = payload.get("url", "")
+    if access == "private":
+        return {"downloadPath": pathname, "downloadUrl": ""}
+
     if not download_url:
         raise ValueError("Blob no devolvió una URL de descarga.")
 
-    return download_url
+    return {"downloadPath": pathname, "downloadUrl": download_url}
 
 
 def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
@@ -150,11 +168,12 @@ def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
             "La conversión no produjo contenido. El PDF puede estar escaneado como imagen."
         )
 
-    download_url = upload_markdown(markdown_text, filename)
+    upload_result = upload_markdown(markdown_text, filename)
     output_name = os.path.splitext(os.path.basename(filename))[0] + ".md"
 
     return {
-        "downloadUrl": download_url,
+        "downloadUrl": upload_result.get("downloadUrl", ""),
+        "downloadPath": upload_result.get("downloadPath", ""),
         "preview": markdown_text[:PREVIEW_CHAR_LIMIT],
         "filename": output_name,
         "charCount": len(markdown_text),

@@ -30,9 +30,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           tokenPayload: JSON.stringify({ purpose: "markitdown-upload" }),
         };
       },
-      onUploadCompleted: async () => {
-        // Vercel Blob elimina entradas según cacheControlMaxAge / políticas del store.
-      },
+      onUploadCompleted: async () => {},
     });
 
     return NextResponse.json(jsonResponse);
