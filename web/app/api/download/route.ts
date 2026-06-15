@@ -1,9 +1,8 @@
-import { get } from "@vercel/blob";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-/** Descarga archivos Blob privados usando el token del servidor. */
+/** Descarga archivos Blob privados usando el token del servidor (REST API). */
 export async function GET(request: Request): Promise<NextResponse> {
   const pathname = new URL(request.url).searchParams.get("pathname");
 
@@ -11,7 +10,8 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "pathname inválido." }, { status: 400 });
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) {
     return NextResponse.json(
       { error: "BLOB_READ_WRITE_TOKEN no configurado." },
       { status: 500 },
@@ -19,17 +19,18 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const result = await get(pathname, { access: "private" });
+    const fileResponse = await fetch(
+      `https://blob.vercel-storage.com/${pathname}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
-    if (!result || !result.url) {
+    if (fileResponse.status === 404) {
       return NextResponse.json({ error: "Archivo no encontrado." }, { status: 404 });
     }
-
-    const fileResponse = await fetch(result.url, {
-      headers: {
-        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-      },
-    });
 
     if (!fileResponse.ok) {
       return NextResponse.json(
