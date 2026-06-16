@@ -1,7 +1,16 @@
 import ToolTabs from "@/components/ToolTabs";
-import { MAX_FILE_SIZE_MB, SUPPORTED_ON_VERCEL } from "@/lib/constants";
+import {
+  getServerMaxFileSizeMb,
+  getServerMaxSplitFileSizeMb,
+} from "@/lib/file-limits";
+import { SUPPORTED_ON_VERCEL } from "@/lib/constants";
+
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
+  const maxFileSizeMb = getServerMaxFileSizeMb();
+  const maxSplitFileMb = getServerMaxSplitFileSizeMb();
+
   return (
     <main>
       <section className="hero">
@@ -23,11 +32,14 @@ export default function HomePage() {
       </section>
 
       <section className="tools-section card">
-        <ToolTabs />
+        <ToolTabs
+          maxFileSizeMb={maxFileSizeMb}
+          maxSplitFileMb={maxSplitFileMb}
+        />
       </section>
 
       <p className="notice-short">
-        Uso público · archivos temporales (~1 h) · límite {MAX_FILE_SIZE_MB} MB por
+        Uso público · archivos temporales (~1 h) · límite {maxFileSizeMb} MB por
         archivo
       </p>
 

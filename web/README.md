@@ -27,10 +27,7 @@ cp .env.example .env.local
 | Variable | Descripción |
 |----------|-------------|
 | `BLOB_READ_WRITE_TOKEN` | Token de lectura/escritura de Vercel Blob |
-| `MAX_FILE_SIZE_MB` | Límite en servidor (upload + Python convert) |
-| `NEXT_PUBLIC_MAX_FILE_SIZE_MB` | Mismo valor que arriba; texto en la UI (evita error React #418) |
-
-En Vercel Dashboard → Project → Settings → Environment Variables, define **ambas** con el mismo valor (p. ej. `70`) y redeploy.
+| `MAX_FILE_SIZE_MB` | Tamaño máximo por archivo en UI, subida y conversión (default: 25) |
 
 ## Desarrollo local
 
@@ -57,7 +54,7 @@ vercel dev
 2. Importa el repositorio en Vercel.
 3. **Root Directory:** `web` ← obligatorio (sin esto verás 404)
 4. Crea un store **Blob** en el proyecto (Vercel lo vincula y crea `BLOB_READ_WRITE_TOKEN`).
-5. Añade `MAX_FILE_SIZE_MB=70` y `NEXT_PUBLIC_MAX_FILE_SIZE_MB=70` en Environment Variables.
+5. Añade `MAX_FILE_SIZE_MB=70` en Environment Variables y redeploy.
 6. Asegúrate de que `web/lib/constants.ts` esté commiteado en GitHub.
 7. Deploy.
 

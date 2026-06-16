@@ -3,8 +3,10 @@ export {
   MAX_FILE_SIZE_BYTES,
   getServerMaxFileSizeBytes,
   getServerMaxFileSizeMb,
+  getServerMaxSplitFileSizeMb,
 } from "./file-limits";
 
+/** @deprecated Usar getServerMaxSplitFileSizeMb() en servidor. */
 export const MAX_SPLIT_FILE_SIZE_MB = Number(process.env.MAX_SPLIT_FILE_MB ?? "120");
 export const MAX_SPLIT_FILE_SIZE_BYTES = MAX_SPLIT_FILE_SIZE_MB * 1024 * 1024;
 export const PREVIEW_CHAR_LIMIT = 50_000;

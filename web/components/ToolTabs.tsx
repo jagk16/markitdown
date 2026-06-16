@@ -6,7 +6,15 @@ import PdfSplitter from "@/components/PdfSplitter";
 
 type ToolTab = "convert" | "split";
 
-export default function ToolTabs() {
+type ToolTabsProps = {
+  maxFileSizeMb: number;
+  maxSplitFileMb: number;
+};
+
+export default function ToolTabs({
+  maxFileSizeMb,
+  maxSplitFileMb,
+}: ToolTabsProps) {
   const [tab, setTab] = useState<ToolTab>("convert");
 
   return (
@@ -34,7 +42,14 @@ export default function ToolTabs() {
       </div>
 
       <div className="tool-panel" role="tabpanel">
-        {tab === "convert" ? <DropZone /> : <PdfSplitter />}
+        {tab === "convert" ? (
+          <DropZone maxFileSizeMb={maxFileSizeMb} />
+        ) : (
+          <PdfSplitter
+            maxFileSizeMb={maxFileSizeMb}
+            maxSplitFileMb={maxSplitFileMb}
+          />
+        )}
       </div>
     </div>
   );

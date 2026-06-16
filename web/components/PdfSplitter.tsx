@@ -3,7 +3,6 @@
 import { useCallback, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import JSZip from "jszip";
-import { MAX_FILE_SIZE_MB, MAX_SPLIT_FILE_SIZE_MB } from "@/lib/constants";
 import { sanitizeUploadPath } from "@/lib/upload-path";
 import {
   formatBytes,
@@ -16,7 +15,15 @@ const SPLIT_PART_OPTIONS = [2, 3, 4, 5, 6, 8, 10] as const;
 
 type Stage = "idle" | "uploading" | "splitting" | "done" | "error";
 
-export default function PdfSplitter() {
+type PdfSplitterProps = {
+  maxFileSizeMb: number;
+  maxSplitFileMb: number;
+};
+
+export default function PdfSplitter({
+  maxFileSizeMb,
+  maxSplitFileMb,
+}: PdfSplitterProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [stage, setStage] = useState<Stage>("idle");
@@ -43,11 +50,11 @@ export default function PdfSplitter() {
         return;
       }
 
-      const maxBytes = MAX_SPLIT_FILE_SIZE_MB * 1024 * 1024;
+      const maxBytes = maxSplitFileMb * 1024 * 1024;
       if (file.size > maxBytes) {
         setStage("error");
         setStatusMessage(
-          `El PDF supera ${MAX_SPLIT_FILE_SIZE_MB} MB. Comprímelo en tu PC antes.`,
+          `El PDF supera ${maxSplitFileMb} MB. Comprímelo en tu PC antes.`,
         );
         return;
       }
@@ -101,7 +108,7 @@ export default function PdfSplitter() {
         );
       }
     },
-    [partCount],
+    [partCount, maxSplitFileMb],
   );
 
   const downloadZip = useCallback(async () => {
@@ -129,8 +136,8 @@ export default function PdfSplitter() {
       <p className="dropzone-hint" style={{ marginBottom: "1rem" }}>
         Sube el PDF y el servidor lo divide <strong>por páginas</strong>, guardando
         solo el contenido de cada tramo (no duplica todo el archivo). Límite de
-        subida: {MAX_SPLIT_FILE_SIZE_MB} MB. Cada parte debe quedar bajo{" "}
-        {MAX_FILE_SIZE_MB} MB para convertir a Markdown.
+        subida: {maxSplitFileMb} MB. Cada parte debe quedar bajo{" "}
+        {maxFileSizeMb} MB para convertir a Markdown.
       </p>
 
       <div className="part-selector" role="group" aria-label="Número de partes">
@@ -167,7 +174,7 @@ export default function PdfSplitter() {
         </div>
         <p className="dropzone-title">Arrastra tu PDF aquí</p>
         <p className="dropzone-hint">
-          Solo PDF · hasta {MAX_SPLIT_FILE_SIZE_MB} MB
+          Solo PDF · hasta {maxSplitFileMb} MB
         </p>
         <label className="file-input-label">
           Elegir PDF
@@ -255,8 +262,8 @@ export default function PdfSplitter() {
                   <span className="dropzone-hint">
                     {" "}
                     · páginas {part.pageFrom}–{part.pageTo} · {formatBytes(part.sizeBytes)}
-                    {part.sizeBytes > MAX_FILE_SIZE_MB * 1024 * 1024 && (
-                      <span className="status error"> · aún supera {MAX_FILE_SIZE_MB} MB</span>
+                    {part.sizeBytes > maxFileSizeMb * 1024 * 1024 && (
+                      <span className="status error"> · aún supera {maxFileSizeMb} MB</span>
                     )}
                   </span>
                 </div>

@@ -5,8 +5,6 @@ import { upload } from "@vercel/blob/client";
 import {
   ALLOWED_EXTENSIONS,
   FORMAT_LABEL,
-  MAX_FILE_SIZE_BYTES,
-  MAX_FILE_SIZE_MB,
 } from "@/lib/constants";
 import { sanitizeUploadPath } from "@/lib/upload-path";
 
@@ -25,9 +23,10 @@ function getExtension(filename: string): string {
   return dot >= 0 ? filename.slice(dot).toLowerCase() : "";
 }
 
-function validateFile(file: File): string | null {
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    return `El archivo supera el límite de ${MAX_FILE_SIZE_MB} MB.`;
+function validateFile(file: File, maxFileSizeMb: number): string | null {
+  const maxBytes = maxFileSizeMb * 1024 * 1024;
+  if (file.size > maxBytes) {
+    return `El archivo supera el límite de ${maxFileSizeMb} MB.`;
   }
 
   const ext = getExtension(file.name);
@@ -38,7 +37,11 @@ function validateFile(file: File): string | null {
   return null;
 }
 
-export default function DropZone() {
+type DropZoneProps = {
+  maxFileSizeMb: number;
+};
+
+export default function DropZone({ maxFileSizeMb }: DropZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [stage, setStage] = useState<Stage>("idle");
@@ -59,7 +62,7 @@ export default function DropZone() {
   }, []);
 
   const processFile = useCallback(async (file: File) => {
-    const validationError = validateFile(file);
+    const validationError = validateFile(file, maxFileSizeMb);
     if (validationError) {
       setStage("error");
       setStatusMessage(validationError);
@@ -127,7 +130,7 @@ export default function DropZone() {
         error instanceof Error ? error.message : "Ocurrió un error inesperado.",
       );
     }
-  }, []);
+  }, [maxFileSizeMb]);
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -169,7 +172,7 @@ export default function DropZone() {
         </div>
         <p className="dropzone-title">Arrastra tu archivo aquí</p>
         <p className="dropzone-hint">
-          {FORMAT_LABEL} · máximo {MAX_FILE_SIZE_MB} MB
+          {FORMAT_LABEL} · máximo {maxFileSizeMb} MB
         </p>
         <label className="file-input-label">
           Elegir archivo
