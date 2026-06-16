@@ -1,5 +1,5 @@
-import DropZone from "@/components/DropZone";
 import DeployStatus from "@/components/DeployStatus";
+import ToolTabs from "@/components/ToolTabs";
 import { MAX_FILE_SIZE_MB, SUPPORTED_ON_VERCEL } from "@/lib/constants";
 
 export default function HomePage() {
@@ -49,7 +49,7 @@ export default function HomePage() {
 
       <DeployStatus />
 
-      <DropZone />
+      <ToolTabs />
 
       <footer>
         Powered by{" "}
