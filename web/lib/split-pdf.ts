@@ -19,6 +19,12 @@ function baseName(filename: string): string {
   return dot >= 0 ? filename.slice(0, dot) : filename;
 }
 
+function bytesToPdfBlob(bytes: Uint8Array): Blob {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return new Blob([buffer], { type: "application/pdf" });
+}
+
 /** Divide un PDF en N partes con rangos de páginas lo más iguales posible. */
 export async function splitPdfIntoParts(
   file: File,
@@ -58,11 +64,7 @@ export async function splitPdfIntoParts(
     }
 
     const partBytes = await partDoc.save();
-    const buffer = partBytes.buffer.slice(
-      partBytes.byteOffset,
-      partBytes.byteOffset + partBytes.byteLength,
-    );
-    const blob = new Blob([buffer], { type: "application/pdf" });
+    const blob = bytesToPdfBlob(partBytes);
 
     parts.push({
       index: i + 1,
