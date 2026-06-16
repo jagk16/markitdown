@@ -1,4 +1,3 @@
-import DeployStatus from "@/components/DeployStatus";
 import ToolTabs from "@/components/ToolTabs";
 import { MAX_FILE_SIZE_MB, SUPPORTED_ON_VERCEL } from "@/lib/constants";
 
@@ -11,8 +10,7 @@ export default function HomePage() {
           <span className="gradient-text">Markdown</span>
         </h1>
         <p className="subtitle">
-          Sube PDF, Word, Excel y más. Obtén texto estructurado listo para LLMs,
-          RAG y pipelines de datos. Basado en{" "}
+          Sube PDF, Word, Excel y más. Obtén texto listo para LLMs y RAG. Basado en{" "}
           <a
             href="https://github.com/microsoft/markitdown"
             target="_blank"
@@ -24,19 +22,17 @@ export default function HomePage() {
         </p>
       </section>
 
-      <div className="notice">
-        <span className="notice-icon" aria-hidden>
-          ℹ️
-        </span>
-        <div>
-          Uso público bajo tu responsabilidad. Archivos temporales (~1 h).
-          Límite: {MAX_FILE_SIZE_MB} MB. PDFs muy grandes pueden agotar 5 min
-          (Vercel Hobby). Blob store debe ser <strong>Public</strong> en Vercel.
-        </div>
-      </div>
+      <section className="tools-section card">
+        <ToolTabs />
+      </section>
+
+      <p className="notice-short">
+        Uso público · archivos temporales (~1 h) · límite {MAX_FILE_SIZE_MB} MB por
+        archivo
+      </p>
 
       <details className="formats-list">
-        <summary>Formatos soportados en Vercel</summary>
+        <summary>Formatos soportados</summary>
         <ul>
           {SUPPORTED_ON_VERCEL.map((format) => (
             <li key={format}>{format}</li>
@@ -47,10 +43,6 @@ export default function HomePage() {
         </p>
       </details>
 
-      <DeployStatus />
-
-      <ToolTabs />
-
       <footer>
         Powered by{" "}
         <a
@@ -59,8 +51,7 @@ export default function HomePage() {
           rel="noopener noreferrer"
         >
           MarkItDown
-        </a>{" "}
-        · Desplegado en Vercel
+        </a>
       </footer>
     </main>
   );

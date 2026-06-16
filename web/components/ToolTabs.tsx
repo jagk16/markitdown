@@ -10,7 +10,8 @@ export default function ToolTabs() {
   const [tab, setTab] = useState<ToolTab>("convert");
 
   return (
-    <>
+    <div className="tool-tabs-wrap">
+      <p className="tool-tabs-heading">Elige una herramienta</p>
       <div className="tool-tabs" role="tablist" aria-label="Herramientas">
         <button
           type="button"
@@ -32,7 +33,9 @@ export default function ToolTabs() {
         </button>
       </div>
 
-      {tab === "convert" ? <DropZone /> : <PdfSplitter />}
-    </>
+      <div className="tool-panel" role="tabpanel">
+        {tab === "convert" ? <DropZone /> : <PdfSplitter />}
+      </div>
+    </div>
   );
 }

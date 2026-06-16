@@ -7,6 +7,10 @@
     "api/convert.py": {
       "maxDuration": 300,
       "memory": 2048
+    },
+    "api/split_pdf.py": {
+      "maxDuration": 300,
+      "memory": 2048
     }
   }
 }

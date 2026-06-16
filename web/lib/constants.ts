@@ -1,5 +1,9 @@
 export const MAX_FILE_SIZE_MB = Number(process.env.MAX_FILE_SIZE_MB ?? "25");
 export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+/** Límite para subir PDFs solo para dividir (servidor con pypdf). */
+export const MAX_SPLIT_FILE_SIZE_MB = Number(process.env.MAX_SPLIT_FILE_MB ?? "120");
+export const MAX_SPLIT_FILE_SIZE_BYTES = MAX_SPLIT_FILE_SIZE_MB * 1024 * 1024;
 export const PREVIEW_CHAR_LIMIT = 50_000;
 export const BLOB_TTL_SECONDS = 3600;
 
