@@ -61,7 +61,7 @@ export default function DeployStatus() {
             </p>
           )}
           {health.fixHint && !blobOk && (
-            <p className="dropzone-hint" style={{ color: "#fcd34d" }}>
+            <p className="dropzone-hint" style={{ color: "hsl(var(--accent))" }}>
               {health.fixHint}
             </p>
           )}

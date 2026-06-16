@@ -165,7 +165,7 @@ export default function DropZone() {
         onDrop={onDrop}
       >
         <div className="dropzone-icon" aria-hidden>
-          📄
+          ☁
         </div>
         <p className="dropzone-title">Arrastra tu archivo aquí</p>
         <p className="dropzone-hint">

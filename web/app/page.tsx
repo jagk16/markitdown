@@ -5,25 +5,35 @@ import { MAX_FILE_SIZE_MB, SUPPORTED_ON_VERCEL } from "@/lib/constants";
 export default function HomePage() {
   return (
     <main>
-      <h1>MarkItDown Web</h1>
-      <p className="subtitle">
-        Convierte documentos a Markdown en línea. Ideal para PDF, Office y
-        otros formatos compatibles con{" "}
-        <a
-          href="https://github.com/microsoft/markitdown"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Microsoft MarkItDown
-        </a>
-        .
-      </p>
+      <section className="hero">
+        <h1>
+          Convierte documentos a{" "}
+          <span className="gradient-text">Markdown</span>
+        </h1>
+        <p className="subtitle">
+          Sube PDF, Word, Excel y más. Obtén texto estructurado listo para LLMs,
+          RAG y pipelines de datos. Basado en{" "}
+          <a
+            href="https://github.com/microsoft/markitdown"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Microsoft MarkItDown
+          </a>
+          .
+        </p>
+      </section>
 
-      <p className="notice">
-        Uso público bajo tu responsabilidad. Archivos temporales (~1 h).
-        Límite: {MAX_FILE_SIZE_MB} MB. PDFs muy grandes pueden agotar 5 min
-        (Vercel Hobby). Blob store debe ser <strong>Public</strong> en Vercel.
-      </p>
+      <div className="notice">
+        <span className="notice-icon" aria-hidden>
+          ℹ️
+        </span>
+        <div>
+          Uso público bajo tu responsabilidad. Archivos temporales (~1 h).
+          Límite: {MAX_FILE_SIZE_MB} MB. PDFs muy grandes pueden agotar 5 min
+          (Vercel Hobby). Blob store debe ser <strong>Public</strong> en Vercel.
+        </div>
+      </div>
 
       <details className="formats-list">
         <summary>Formatos soportados en Vercel</summary>
@@ -32,7 +42,7 @@ export default function HomePage() {
             <li key={format}>{format}</li>
           ))}
         </ul>
-        <p className="dropzone-hint">
+        <p className="dropzone-hint" style={{ marginTop: "0.5rem" }}>
           Audio (mp3/wav) no funciona en Vercel (falta ffmpeg).
         </p>
       </details>
