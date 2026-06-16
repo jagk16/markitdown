@@ -56,7 +56,58 @@ _markitdown_instance: MarkItDown | None = None
 
 
 def max_file_size_bytes() -> int:
-    return int(os.environ.get("MAX_FILE_SIZE_MB", "25")) * 1024 * 1024
+    raw = (
+        os.environ.get("MAX_FILE_SIZE_MB")
+        or os.environ.get("NEXT_PUBLIC_MAX_FILE_SIZE_MB")
+        or "25"
+    )
+    return int(raw) * 1024 * 1024
+
+
+def max_file_size_mb_label() -> str:
+    return (
+        os.environ.get("MAX_FILE_SIZE_MB")
+        or os.environ.get("NEXT_PUBLIC_MAX_FILE_SIZE_MB")
+        or "25"
+    )
+
+
+def extract_pdf_with_pypdf(pdf_bytes: bytes) -> str:
+    from pypdf import PdfReader
+
+    reader = PdfReader(io.BytesIO(pdf_bytes))
+    chunks: list[str] = []
+    for i, page in enumerate(reader.pages):
+        text = page.extract_text() or ""
+        if text.strip():
+            chunks.append(f"<!-- Página {i + 1} -->\n\n{text.strip()}")
+    return "\n\n".join(chunks)
+
+
+def extract_pdf_with_pymupdf(pdf_bytes: bytes) -> str:
+    import fitz
+
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    chunks: list[str] = []
+    try:
+        for i in range(doc.page_count):
+            text = doc[i].get_text() or ""
+            if text.strip():
+                chunks.append(f"<!-- Página {i + 1} -->\n\n{text.strip()}")
+    finally:
+        doc.close()
+    return "\n\n".join(chunks)
+
+
+def extract_pdf_fallback(pdf_bytes: bytes) -> str:
+    for extractor in (extract_pdf_with_pypdf, extract_pdf_with_pymupdf):
+        try:
+            text = extractor(pdf_bytes)
+            if text.strip():
+                return text
+        except Exception:
+            continue
+    return ""
 
 
 def get_markitdown() -> MarkItDown:
@@ -134,7 +185,7 @@ def download_blob(url: str) -> bytes:
     content = response.content
     if len(content) > max_file_size_bytes():
         raise ValueError(
-            f"El archivo supera el límite de {os.environ.get('MAX_FILE_SIZE_MB', '25')} MB."
+            f"El archivo supera el límite de {max_file_size_mb_label()} MB."
         )
 
     return content
@@ -155,10 +206,19 @@ def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
     )
 
     markdown_text = result.markdown or result.text_content or ""
+    if not markdown_text.strip() and extension == ".pdf":
+        markdown_text = extract_pdf_fallback(file_bytes)
+
     if not markdown_text.strip():
-        raise ValueError(
-            "La conversión no produjo contenido. El PDF puede estar escaneado como imagen."
-        )
+        if extension == ".pdf":
+            raise ValueError(
+                "La conversión no produjo texto extraíble. Algunos PDFs corporativos "
+                "(memorias, informes con diseño) guardan el texto de forma que MarkItDown "
+                "no lo lee, aunque en el visor parezca seleccionable. Si el PDF es solo "
+                "imagen escaneada, hace falta OCR. Prueba reexportar desde Word o "
+                "'Guardar como PDF optimizado' en Acrobat."
+            )
+        raise ValueError("La conversión no produjo contenido.")
 
     upload_result = upload_markdown_to_blob(markdown_text, filename)
     output_name = os.path.splitext(os.path.basename(filename))[0] + ".md"
@@ -212,7 +272,7 @@ class handler(BaseHTTPRequestHandler):
                     self,
                     400,
                     {
-                        "error": f"El archivo supera el límite de {os.environ.get('MAX_FILE_SIZE_MB', '25')} MB."
+                        "error": f"El archivo supera el límite de {max_file_size_mb_label()} MB."
                     },
                 )
                 return

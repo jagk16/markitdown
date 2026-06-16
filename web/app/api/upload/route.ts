@@ -1,7 +1,7 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { isBlobConfigured } from "@/lib/blob-config";
-import { MAX_FILE_SIZE_BYTES } from "@/lib/constants";
+import { getServerMaxFileSizeBytes } from "@/lib/file-limits";
 
 export const runtime = "nodejs";
 
@@ -31,7 +31,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       request,
       token,
       onBeforeGenerateToken: async () => ({
-        maximumSizeInBytes: MAX_FILE_SIZE_BYTES,
+        maximumSizeInBytes: getServerMaxFileSizeBytes(),
         addRandomSuffix: true,
       }),
       onUploadCompleted: async () => {},
