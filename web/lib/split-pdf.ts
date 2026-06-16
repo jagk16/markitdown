@@ -58,7 +58,11 @@ export async function splitPdfIntoParts(
     }
 
     const partBytes = await partDoc.save();
-    const blob = new Blob([partBytes], { type: "application/pdf" });
+    const buffer = partBytes.buffer.slice(
+      partBytes.byteOffset,
+      partBytes.byteOffset + partBytes.byteLength,
+    );
+    const blob = new Blob([buffer], { type: "application/pdf" });
 
     parts.push({
       index: i + 1,
