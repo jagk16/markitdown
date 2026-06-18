@@ -71,6 +71,9 @@ export const ALLOWED_CONTENT_TYPES = [
 export const FORMAT_LABEL =
   "PDF, Word, Excel, PowerPoint, HTML, CSV, JSON, EPUB, imágenes, ZIP";
 
+/** Máximo de archivos por lote en la pestaña Convertir. */
+export const MAX_BATCH_FILES = Number(process.env.MAX_BATCH_FILES ?? "20") || 20;
+
 /** Formatos que funcionan en Vercel (sin ffmpeg ni Azure). */
 export const SUPPORTED_ON_VERCEL = [
   "PDF (.pdf)",

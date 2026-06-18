@@ -566,6 +566,28 @@ footer a {
   border-bottom: none;
 }
 
+.batch-jobs-list {
+  margin-top: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: hsl(var(--secondary) / 0.25);
+}
+
+.batch-job-item.active {
+  background: hsl(var(--primary) / 0.06);
+}
+
+.batch-job-info {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.batch-job-info strong {
+  font-weight: 600;
+}
+
 /* Scrollbar D-Talent */
 ::-webkit-scrollbar {
   width: 10px;
