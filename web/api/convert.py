@@ -8,6 +8,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import requests
+from excel_convert import convert_excel_bytes_to_markdown
 from markitdown import (
     FileConversionException,
     MarkItDown,
@@ -199,13 +200,23 @@ def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
     file_bytes = download_blob(blob_url)
     stream = io.BytesIO(file_bytes)
 
-    md = get_markitdown()
-    result = md.convert_stream(
-        stream,
-        stream_info=StreamInfo(extension=extension, filename=filename),
-    )
+    if extension in {".xlsx", ".xls"}:
+        try:
+            markdown_text = convert_excel_bytes_to_markdown(file_bytes, extension)
+        except Exception:
+            markdown_text = ""
+    else:
+        markdown_text = ""
 
-    markdown_text = result.markdown or result.text_content or ""
+    if not markdown_text.strip():
+        md = get_markitdown()
+        stream.seek(0)
+        result = md.convert_stream(
+            stream,
+            stream_info=StreamInfo(extension=extension, filename=filename),
+        )
+        markdown_text = result.markdown or result.text_content or ""
+
     if not markdown_text.strip() and extension == ".pdf":
         markdown_text = extract_pdf_fallback(file_bytes)
 

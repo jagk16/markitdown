@@ -77,6 +77,7 @@ Usuario → UI (Next.js)
 | Timeout de conversión | 300 s (5 min) |
 | Audio mp3/wav | Puede fallar (sin `ffmpeg` en serverless) |
 | PDFs escaneados | Poco texto sin Azure Document Intelligence |
+| Excel con diseño | Conversión propia: recorta celdas vacías y separa tablas por bloques (sin `NaN`) |
 | App pública | Riesgo de abuso; archivos temporales ~1 h |
 
 Si PDFs de 400+ páginas agotan el timeout, considera Vercel Pro (800–1800 s) o desplegar el backend en Dokploy con el Dockerfile del repo.
