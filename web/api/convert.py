@@ -164,26 +164,44 @@ def _excel_split_sheet_blocks(df: Any) -> list[Any]:
     return blocks
 
 
+def _excel_compact_row_matrix(rows: list[list[str]]) -> list[list[str]]:
+    """Quita columnas vacías al inicio y al final de la tabla."""
+    if not rows:
+        return []
+
+    max_cols = max(len(r) for r in rows)
+    matrix = [r + [""] * (max_cols - len(r)) for r in rows]
+
+    end = max_cols
+    while end > 0 and all(not matrix[i][end - 1] for i in range(len(matrix))):
+        end -= 1
+
+    start = 0
+    while start < end and all(not matrix[i][start] for i in range(len(matrix))):
+        start += 1
+
+    compacted = [row[start:end] for row in matrix]
+    return [row for row in compacted if any(cell for cell in row)]
+
+
 def _excel_block_to_markdown(block: Any) -> str:
     rows: list[list[str]] = []
     for _, row in block.iterrows():
         cells = [_excel_format_cell(v) for v in row.values]
-        while cells and not cells[-1]:
-            cells.pop()
         if any(cells):
             rows.append(cells)
 
+    rows = _excel_compact_row_matrix(rows)
     if not rows:
         return ""
 
-    max_cols = max(len(r) for r in rows)
-    normalized = [r + [""] * (max_cols - len(r)) for r in rows]
+    max_cols = len(rows[0])
 
     lines = [
-        "| " + " | ".join(_excel_escape_md_cell(c) for c in normalized[0]) + " |",
+        "| " + " | ".join(_excel_escape_md_cell(c) for c in rows[0]) + " |",
         "| " + " | ".join("---" for _ in range(max_cols)) + " |",
     ]
-    for row in normalized[1:]:
+    for row in rows[1:]:
         lines.append("| " + " | ".join(_excel_escape_md_cell(c) for c in row) + " |")
 
     return "\n".join(lines)
