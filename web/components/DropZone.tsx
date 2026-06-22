@@ -164,19 +164,27 @@ export default function DropZone({ maxFileSizeMb }: DropZoneProps) {
               }),
             });
 
+            const rawBody = await response.text();
             let data: ConvertResult & { error?: string };
             try {
-              data = (await response.json()) as ConvertResult & { error?: string };
+              data = JSON.parse(rawBody) as ConvertResult & { error?: string };
             } catch {
               if (response.status === 504) {
-                throw new Error("Timeout (5 min). Archivo muy grande o muchas páginas.");
+                throw new Error(
+                  "Timeout (5 min). Archivo muy grande o muchas páginas.",
+                );
               }
-              throw new Error("Respuesta inválida del servidor.");
+              const snippet = rawBody.trim().slice(0, 180);
+              throw new Error(
+                snippet || `Error del servidor (${response.status}).`,
+              );
             }
 
             if (!response.ok) {
               if (response.status === 504) {
-                throw new Error("Timeout (5 min). Archivo muy grande o muchas páginas.");
+                throw new Error(
+                  "Timeout (5 min). Archivo muy grande o muchas páginas.",
+                );
               }
               throw new Error(data.error ?? "Error al convertir.");
             }

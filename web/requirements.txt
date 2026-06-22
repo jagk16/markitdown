@@ -1,5 +1,6 @@
 # Solo extras necesarios para Vercel (sin Azure ni audio; [all] falla en uv por pre-releases)
 markitdown[pdf,docx,pptx,xlsx,xls,outlook]>=0.1.6
+openpyxl>=3.1.0
 pypdf>=4.0.0
 pymupdf>=1.24.0
 requests>=2.32.0

@@ -8,7 +8,6 @@ from typing import Any
 from urllib.parse import urlparse
 
 import requests
-from excel_convert import convert_excel_bytes_to_markdown
 from markitdown import (
     FileConversionException,
     MarkItDown,
@@ -111,6 +110,116 @@ def extract_pdf_fallback(pdf_bytes: bytes) -> str:
     return ""
 
 
+def _excel_format_cell(value: Any) -> str:
+    if value is None:
+        return ""
+    try:
+        import pandas as pd
+
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    if isinstance(value, float) and value == int(value):
+        return str(int(value))
+    text = str(value).strip()
+    if text.lower() in {"nan", "none", "<na>"}:
+        return ""
+    return text
+
+
+def _excel_row_is_empty(values: Any) -> bool:
+    return all(not _excel_format_cell(v) for v in values)
+
+
+def _excel_escape_md_cell(text: str) -> str:
+    return text.replace("|", "\\|").replace("\n", " ")
+
+
+def _excel_trim_empty_columns(block: Any) -> Any:
+    import pandas as pd
+
+    if block.empty:
+        return block
+    keep = [col for col in block.columns if not _excel_row_is_empty(block[col].values)]
+    return block.loc[:, keep]
+
+
+def _excel_split_sheet_blocks(df: Any) -> list[Any]:
+    blocks: list[Any] = []
+    row_indices: list[int] = []
+
+    for index in range(len(df)):
+        row = df.iloc[index]
+        if _excel_row_is_empty(row.values):
+            if row_indices:
+                blocks.append(df.iloc[row_indices].copy())
+                row_indices = []
+            continue
+        row_indices.append(index)
+
+    if row_indices:
+        blocks.append(df.iloc[row_indices].copy())
+
+    return blocks
+
+
+def _excel_block_to_markdown(block: Any) -> str:
+    rows: list[list[str]] = []
+    for _, row in block.iterrows():
+        cells = [_excel_format_cell(v) for v in row.values]
+        while cells and not cells[-1]:
+            cells.pop()
+        if any(cells):
+            rows.append(cells)
+
+    if not rows:
+        return ""
+
+    max_cols = max(len(r) for r in rows)
+    normalized = [r + [""] * (max_cols - len(r)) for r in rows]
+
+    lines = [
+        "| " + " | ".join(_excel_escape_md_cell(c) for c in normalized[0]) + " |",
+        "| " + " | ".join("---" for _ in range(max_cols)) + " |",
+    ]
+    for row in normalized[1:]:
+        lines.append("| " + " | ".join(_excel_escape_md_cell(c) for c in row) + " |")
+
+    return "\n".join(lines)
+
+
+def convert_excel_bytes_to_markdown(data: bytes, extension: str) -> str:
+    import pandas as pd
+
+    engine = "openpyxl" if extension == ".xlsx" else "xlrd"
+    sheets = pd.read_excel(io.BytesIO(data), sheet_name=None, header=None, engine=engine)
+
+    parts: list[str] = []
+    for sheet_name, raw_df in sheets.items():
+        try:
+            if raw_df.empty:
+                continue
+
+            blocks = _excel_split_sheet_blocks(raw_df)
+            sheet_parts: list[str] = []
+
+            for block in blocks:
+                block = _excel_trim_empty_columns(block.reset_index(drop=True))
+                table = _excel_block_to_markdown(block)
+                if table:
+                    sheet_parts.append(table)
+
+            if sheet_parts:
+                safe_name = re.sub(r"\s+", " ", str(sheet_name).strip()) or "Hoja"
+                parts.append(f"## {safe_name}")
+                parts.extend(sheet_parts)
+        except Exception:
+            continue
+
+    return "\n\n".join(parts).strip()
+
+
 def get_markitdown() -> MarkItDown:
     global _markitdown_instance
     if _markitdown_instance is None:
@@ -199,14 +308,13 @@ def convert_blob_to_markdown(blob_url: str, filename: str) -> dict[str, Any]:
 
     file_bytes = download_blob(blob_url)
     stream = io.BytesIO(file_bytes)
+    markdown_text = ""
 
     if extension in {".xlsx", ".xls"}:
         try:
             markdown_text = convert_excel_bytes_to_markdown(file_bytes, extension)
         except Exception:
             markdown_text = ""
-    else:
-        markdown_text = ""
 
     if not markdown_text.strip():
         md = get_markitdown()
