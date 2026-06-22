@@ -110,22 +110,59 @@ def extract_pdf_fallback(pdf_bytes: bytes) -> str:
     return ""
 
 
+def _excel_format_number(value: float) -> str:
+    import math
+
+    if math.isnan(value) or math.isinf(value):
+        return ""
+    nearest = round(value)
+    if abs(value - nearest) < 1e-6:
+        return str(int(nearest))
+    text = format(value, ".12g")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return text
+
+
 def _excel_format_cell(value: Any) -> str:
     if value is None:
         return ""
     try:
+        import numpy as np
         import pandas as pd
 
         if pd.isna(value):
             return ""
-    except (TypeError, ValueError):
+        if isinstance(value, np.integer):
+            return str(int(value))
+        if isinstance(value, np.floating):
+            return _excel_format_number(float(value))
+    except (TypeError, ValueError, ImportError):
         pass
-    if isinstance(value, float) and value == int(value):
-        return str(int(value))
+
+    if isinstance(value, bool):
+        return "TRUE" if value else "FALSE"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return _excel_format_number(value)
+
     text = str(value).strip()
     if text.lower() in {"nan", "none", "<na>"}:
         return ""
     return text
+
+
+def _excel_cell_is_noise(text: str) -> bool:
+    return not text or text == "*"
+
+
+def _excel_column_is_meaningless(matrix: list[list[str]], col_idx: int) -> bool:
+    for row in matrix:
+        cell = row[col_idx] if col_idx < len(row) else ""
+        if not _excel_cell_is_noise(cell):
+            return False
+    return True
 
 
 def _excel_row_is_empty(values: Any) -> bool:
@@ -165,7 +202,7 @@ def _excel_split_sheet_blocks(df: Any) -> list[Any]:
 
 
 def _excel_compact_row_matrix(rows: list[list[str]]) -> list[list[str]]:
-    """Quita columnas vacías al inicio y al final de la tabla."""
+    """Quita columnas vacías o solo decorativas (*) al inicio y al final."""
     if not rows:
         return []
 
@@ -173,11 +210,11 @@ def _excel_compact_row_matrix(rows: list[list[str]]) -> list[list[str]]:
     matrix = [r + [""] * (max_cols - len(r)) for r in rows]
 
     end = max_cols
-    while end > 0 and all(not matrix[i][end - 1] for i in range(len(matrix))):
+    while end > 0 and _excel_column_is_meaningless(matrix, end - 1):
         end -= 1
 
     start = 0
-    while start < end and all(not matrix[i][start] for i in range(len(matrix))):
+    while start < end and _excel_column_is_meaningless(matrix, start):
         start += 1
 
     compacted = [row[start:end] for row in matrix]
